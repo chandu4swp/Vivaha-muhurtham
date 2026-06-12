@@ -35,6 +35,31 @@ except (OSError, PermissionError):
 
 # ── Decorators & Utilities ────────────────────────────────────────────────────
 
+
+# ── Database Initialization ────────────────────────────────────────────────────
+
+# Track if database has been initialized in this session
+_db_init_flag = False
+
+def _ensure_db_initialized():
+    """Ensure database is initialized on first request (important for serverless environments)"""
+    global _db_init_flag
+    if not _db_init_flag:
+        try:
+            init_db()
+            _db_init_flag = True
+            print("✓ Database initialized on first request")
+        except Exception as e:
+            print(f"⚠ Database initialization on first request failed: {e}")
+            # Mark as attempted to avoid repeated failures
+            _db_init_flag = True
+
+@app.before_request
+def before_request():
+    """Run before each request - ensures database is ready"""
+    _ensure_db_initialized()
+
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 

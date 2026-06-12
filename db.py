@@ -232,6 +232,17 @@ def _ensure_tables_exist():
     except Exception as e:
         print(f"Warning: Could not check tables: {e}")
 
+        if not table_exists:
+            print("⚠ Tables don't exist, initializing database...")
+            init_db()
+    except Exception as e:
+        print(f"⚠ Could not verify tables exist: {e}")
+        # If check fails, attempt to initialize anyway
+        try:
+            print("→ Attempting automatic database initialization...")
+            init_db()
+        except Exception as init_error:
+            print(f"✗ Critical: Database initialization failed: {init_error}")
 
 # ── User Operations ────────────────────────────────────────────────────────────
 
