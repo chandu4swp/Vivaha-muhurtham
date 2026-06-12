@@ -244,6 +244,45 @@ def _ensure_tables_exist():
         except Exception as init_error:
             print(f"✗ Critical: Database initialization failed: {init_error}")
 
+
+def get_db_info():
+    """Return diagnostic info about the database connection and existing tables."""
+    info = {
+        "use_postgres": USE_POSTGRES,
+        "has_psycopg2": HAS_POSTGRES,
+        "database_url": bool(DATABASE_URL),
+        "server": None,
+        "tables": [],
+    }
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        if USE_POSTGRES and HAS_POSTGRES:
+            try:
+                cursor.execute("SELECT version()")
+                info["server"] = cursor.fetchone()[0]
+            except Exception:
+                pass
+            try:
+                cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+                info["tables"] = [r[0] for r in cursor.fetchall()]
+            except Exception:
+                pass
+        else:
+            try:
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                info["tables"] = [r[0] for r in cursor.fetchall()]
+            except Exception:
+                pass
+
+        cursor.close()
+        close_db_connection(conn)
+    except Exception as e:
+        info["error"] = str(e)
+
+    return info
+
 # ── User Operations ────────────────────────────────────────────────────────────
 
 def get_user_by_email(email):

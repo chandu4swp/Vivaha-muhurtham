@@ -257,13 +257,29 @@ def signup():
                         create_user(email, password)
                         session["user_email"] = email
                         return redirect(url_for("index"))
-                    except sqlite3.IntegrityError:
-                        error = "This email is already registered."
+                    except Exception as e:
+                        # Handle unique constraint errors across DB backends
+                        msg = str(e).lower()
+                        print(f"Signup DB error: {e}")
+                        if "unique" in msg or "duplicate" in msg or "integrity" in msg:
+                            error = "This email is already registered."
+                        else:
+                            error = f"Error creating account: {str(e)}"
         except Exception as e:
             error = f"Error: {str(e)}"
             print(f"Signup error: {e}")
 
     return render_template("register_user.html", error=error)
+
+
+@app.route("/db_status")
+def db_status():
+    """Diagnostic endpoint that returns DB connection info and existing tables."""
+    try:
+        info = get_db_info()
+        return jsonify({"ok": True, "db": info})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/logout")
