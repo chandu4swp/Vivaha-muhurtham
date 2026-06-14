@@ -10,6 +10,7 @@ venv/
 # Database and uploads
 matrimonial.db
 static/uploads/
+dbnotes.
 
 # VS Code settings
 .vscode/

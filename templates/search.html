@@ -71,7 +71,7 @@
 {% block content %}
 <div class="search-hero">
   <h2>🔍 Search Profiles</h2>
-  <p>Find matrimonial profiles by name, email, or profile ID</p>
+  <p>Find matrimonial profiles by name, phone, caste, or profile ID</p>
 </div>
 
 <div class="search-box">
@@ -132,8 +132,8 @@ async function doSearch() {
           <div class="card-id">${p.id}</div>
           <div class="card-name">${p.name}</div>
           <div class="card-details">
-            ${[age, p.gender, p.religion].filter(Boolean).join(' · ')}<br>
-            ${[p.education, p.occupation].filter(Boolean).join(' · ')}<br>
+            ${[age, p.religion, p.qualification || p.education].filter(Boolean).join(' · ')}<br>
+            ${[p.occupation, p.income].filter(Boolean).join(' · ')}<br>
             ${loc || ''}
           </div>
           <div>

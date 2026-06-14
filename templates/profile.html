@@ -85,13 +85,13 @@
       {% if profile.age %}
         <span class="q-tag">🎂 {{ profile.age }}</span>
       {% endif %}
-      {% if profile.gender %}<span class="q-tag">{{ '♂' if profile.gender=='Male' else '♀' if profile.gender=='Female' else '⚧' }} {{ profile.gender }}</span>{% endif %}
       {% if profile.religion %}<span class="q-tag">🙏 {{ profile.religion }}</span>{% endif %}
       {% if profile.height %}<span class="q-tag">📏 {{ profile.height }}</span>{% endif %}
       {% if profile.city %}<span class="q-tag">📍 {{ profile.city }}{% if profile.state %}, {{ profile.state }}{% endif %}</span>{% endif %}
     </div>
     <div style="color:var(--text-light);font-size:0.82rem">
-      📧 {{ profile.email }} {% if profile.phone %} &nbsp;·&nbsp; 📞 {{ profile.phone }}{% endif %}
+      {% if profile.phone %}📞 {{ profile.phone }}{% endif %}
+      {% if profile.alt_phone %} {% if profile.phone %}&nbsp;·&nbsp;{% endif %}📞 {{ profile.alt_phone }}{% endif %}
     </div>
   </div>
 </div>
@@ -101,10 +101,11 @@
     <h3>👤 Personal Details</h3>
     {% for label, val in [
       ('Date of Birth', profile.dob),
-      ('Gender', profile.gender),
+      ('Birth Time', profile.birth_time),
       ('Height', profile.height),
       ('Religion', profile.religion),
       ('Caste / Community', profile.caste),
+      ('Secondary Religion', profile.religion_alt),
     ] %}
     {% if val %}
     <div class="detail-row">
@@ -118,6 +119,7 @@
   <div class="detail-section">
     <h3>🎓 Education & Career</h3>
     {% for label, val in [
+      ('Qualification', profile.qualification),
       ('Education', profile.education),
       ('Occupation', profile.occupation),
       ('Annual Income', profile.income),
@@ -149,14 +151,16 @@
 
   <div class="detail-section">
     <h3>📋 Contact Info</h3>
-    <div class="detail-row">
-      <span class="detail-key">Email</span>
-      <span class="detail-val">{{ profile.email }}</span>
-    </div>
     {% if profile.phone %}
     <div class="detail-row">
       <span class="detail-key">Phone</span>
       <span class="detail-val">{{ profile.phone }}</span>
+    </div>
+    {% endif %}
+    {% if profile.alt_phone %}
+    <div class="detail-row">
+      <span class="detail-key">Alternate Phone</span>
+      <span class="detail-val">{{ profile.alt_phone }}</span>
     </div>
     {% endif %}
     <div class="detail-row">

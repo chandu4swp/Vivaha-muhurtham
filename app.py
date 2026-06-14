@@ -1,35 +1,25 @@
 import os
 import uuid
 import datetime
+import imghdr
 import sqlite3
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, session
 from werkzeug.security import check_password_hash
-from werkzeug.utils import secure_filename
 
 # Import database layer
 from db import (
     get_db_connection, close_db_connection, init_db, get_user_by_email,
     create_user, create_profile, get_profile_by_id, search_profiles,
-    get_all_profiles, row_to_dict, USE_POSTGRES, SQLITE_DB_PATH
+    get_all_profiles, row_to_dict, get_profile_image_by_name, USE_POSTGRES, SQLITE_DB_PATH
 )
 
 app = Flask(__name__)
 app.secret_key = "matrimonial_secret_key"
 
 # Config
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
-
-# Try to create upload folder (will fail on read-only filesystems like Vercel)
-try:
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-except (OSError, PermissionError):
-    pass  # Read-only filesystem (e.g., Vercel serverless)
 
 
 
@@ -96,22 +86,20 @@ def register():
     if request.method == "POST":
         try:
             data = request.form
-            photo_filename = None
+            photo_bytes = None
 
             if "photo" in request.files:
                 file = request.files["photo"]
                 if file and file.filename and allowed_file(file.filename):
                     try:
-                        ext = file.filename.rsplit(".", 1)[1].lower()
-                        photo_filename = f"{uuid.uuid4().hex}.{ext}"
-                        file.save(os.path.join(app.config["UPLOAD_FOLDER"], photo_filename))
-                    except (OSError, PermissionError) as e:
-                        print(f"Warning: Could not save photo: {e}")
-                        photo_filename = None  # Continue without photo
+                        photo_bytes = file.read()
+                    except Exception as e:
+                        print(f"Warning: Could not read uploaded photo: {e}")
+                        photo_bytes = None
 
             profile_id = "MAT" + uuid.uuid4().hex[:8].upper()
 
-            create_profile(profile_id, data, photo_filename)
+            create_profile(profile_id, data, photo_bytes)
             return jsonify({"success": True, "id": profile_id, "message": f"Profile created! Your ID: {profile_id}"})
         except sqlite3.IntegrityError as e:
             print(f"Profile integrity error: {e}")
@@ -143,14 +131,41 @@ def api_search():
         results = []
         for r in rows:
             d = row_to_dict(r)
-            if d.get("photo"):
-                d["photo_url"] = url_for("static", filename=f"uploads/{d['photo']}")
+            name = d.get("name")
+            if name and get_profile_image_by_name(name):
+                d["photo_url"] = url_for("profile_image", name=name)
             else:
                 d["photo_url"] = None
             results.append(d)
         return jsonify(results)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/profile_image/<path:name>")
+def profile_image(name):
+    """Serve profile image bytes from vivahimages by profile name."""
+    try:
+        image_bytes = get_profile_image_by_name(name)
+        if not image_bytes:
+            return jsonify({"error": "Image not found"}), 404
+
+        image_type = imghdr.what(None, image_bytes)
+        if image_type == "jpeg":
+            mime_type = "image/jpeg"
+        elif image_type == "png":
+            mime_type = "image/png"
+        elif image_type == "gif":
+            mime_type = "image/gif"
+        elif image_type == "webp":
+            mime_type = "image/webp"
+        else:
+            mime_type = "application/octet-stream"
+
+        return Response(image_bytes, mimetype=mime_type)
+    except Exception as e:
+        print(f"Error serving profile image: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/profile/<profile_id>")
@@ -162,8 +177,9 @@ def profile(profile_id):
             return render_template("404.html"), 404
         
         data = row_to_dict(row)
-        if data.get("photo"):
-            data["photo_url"] = url_for("static", filename=f"uploads/{data['photo']}")
+        name = data.get("name")
+        if name and get_profile_image_by_name(name):
+            data["photo_url"] = url_for("profile_image", name=name)
         else:
             data["photo_url"] = None
 
@@ -191,8 +207,9 @@ def api_all_profiles():
         results = []
         for r in rows:
             d = row_to_dict(r)
-            if d.get("photo"):
-                d["photo_url"] = url_for("static", filename=f"uploads/{d['photo']}")
+            name = d.get("name")
+            if name and get_profile_image_by_name(name):
+                d["photo_url"] = url_for("profile_image", name=name)
             else:
                 d["photo_url"] = None
             results.append(d)

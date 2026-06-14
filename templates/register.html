@@ -90,25 +90,20 @@
         <input type="text" name="name" class="form-control" required placeholder="e.g. Priya Sharma">
       </div>
       <div class="form-group">
-        <label class="form-label">Email Address *</label>
-        <input type="email" name="email" class="form-control" required placeholder="email@example.com">
-      </div>
-      <div class="form-group">
         <label class="form-label">Phone Number</label>
         <input type="tel" name="phone" class="form-control" placeholder="+91 9876543210">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alternate Phone</label>
+        <input type="tel" name="alt_phone" class="form-control" placeholder="Optional alternate number">
       </div>
       <div class="form-group">
         <label class="form-label">Date of Birth</label>
         <input type="date" name="dob" class="form-control">
       </div>
       <div class="form-group">
-        <label class="form-label">Gender</label>
-        <select name="gender" class="form-control">
-          <option value="">Select</option>
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
-        </select>
+        <label class="form-label">Birth Time</label>
+        <input type="text" name="birth_time" class="form-control" placeholder="e.g. 06:45 AM">
       </div>
       <div class="form-group">
         <label class="form-label">Height</label>
@@ -133,6 +128,10 @@
         </select>
       </div>
       <div class="form-group">
+        <label class="form-label">Religion / Subgroup</label>
+        <input type="text" name="religion_alt" class="form-control" placeholder="e.g. Vaishnav, Shaiva, Sunni...">
+      </div>
+      <div class="form-group">
         <label class="form-label">Caste / Community</label>
         <input type="text" name="caste" class="form-control" placeholder="e.g. Brahmin, Yadav...">
       </div>
@@ -141,6 +140,16 @@
     <!-- Education & Career -->
     <div class="section-title">🎓 Education & Career</div>
     <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Qualification</label>
+        <select name="qualification" class="form-control">
+          <option value="">Select</option>
+          <option>Below 10th</option><option>10th Pass</option><option>12th Pass</option>
+          <option>Diploma</option><option>Bachelor's Degree</option><option>Master's Degree</option>
+          <option>MBA</option><option>Engineering</option><option>Medicine (MBBS)</option>
+          <option>PhD / Doctorate</option><option>Other</option>
+        </select>
+      </div>
       <div class="form-group">
         <label class="form-label">Education</label>
         <select name="education" class="form-control">
