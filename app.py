@@ -13,7 +13,7 @@ from db import (
     create_user, create_profile, get_profile_by_id, search_profiles,
     get_all_profiles, row_to_dict, get_profile_image_by_name, USE_POSTGRES, SQLITE_DB_PATH
 )
-
+# Flask application setup --my comment
 app = Flask(__name__)
 app.secret_key = "matrimonial_secret_key"
 
